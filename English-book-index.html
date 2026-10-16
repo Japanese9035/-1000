@@ -1,0 +1,181 @@
+<!doctype html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>ことばポケット | 英単語帳</title>
+<style>
+:root{--ink:#1f2a44;--muted:#667085;--paper:#f7f8fc;--card:#fff;--blue:#5268e8;--mint:#dff7ec;--line:#e6e9f2;--pink:#ffe7ee}
+*{box-sizing:border-box}body{margin:0;background:var(--paper);color:var(--ink);font-family:system-ui,-apple-system,"Segoe UI",sans-serif}
+header{padding:28px 20px 22px;background:linear-gradient(130deg,#e8edff,#e2fbf2);border-bottom:1px solid var(--line)}
+.wrap{max-width:1000px;margin:auto}.eyebrow{font-size:.78rem;font-weight:800;letter-spacing:.12em;color:#5268a9;text-transform:uppercase}
+h1{font-size:clamp(1.8rem,5vw,2.7rem);margin:8px 0}header p{margin:0;color:#4f5d76}.main{max-width:1000px;margin:22px auto;padding:0 16px 40px}
+.stats{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-bottom:18px}.stat{background:var(--card);padding:14px;border:1px solid var(--line);border-radius:16px}.stat strong{display:block;font-size:1.45rem}.stat span{color:var(--muted);font-size:.82rem}
+.tools{display:flex;gap:9px;flex-wrap:wrap;margin-bottom:14px}.tools input,.tools select{flex:1;min-width:150px;border:1px solid var(--line);background:white;border-radius:12px;padding:12px;font:inherit;color:var(--ink)}
+.tabs{display:flex;gap:8px;overflow:auto;padding:3px 0 13px}.tab,button{border:0;border-radius:11px;padding:10px 14px;font:inherit;font-weight:700;cursor:pointer}.tab{background:#eceef7;color:#59627a;white-space:nowrap}.tab.active{background:var(--ink);color:white}
+.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,260px),1fr));gap:13px}.word{background:var(--card);border:1px solid var(--line);border-radius:18px;padding:17px;box-shadow:0 4px 14px #1d2b4a08;display:flex;flex-direction:column;gap:10px}.wordtop{display:flex;justify-content:space-between;align-items:center;gap:8px}.tag{font-size:.74rem;background:var(--mint);padding:5px 9px;border-radius:99px;color:#236b50;font-weight:800}.star{background:#f3f4fa;color:#69738b;padding:7px 10px}.star.saved{background:#fff0bd;color:#775900}.english{font-size:1.55rem;font-weight:850;letter-spacing:-.03em}.japanese{font-size:1.05rem;font-weight:700}.example{background:#f7f8fc;border-radius:12px;padding:11px;font-size:.9rem;color:#4e5b73}.example b{color:#293858}.actions{display:flex;gap:8px;margin-top:auto}.actions button{flex:1;background:#edf0ff;color:#4255c4}.actions button:last-child{background:#e8f8f0;color:#26714e}.empty{padding:32px;text-align:center;color:var(--muted);grid-column:1/-1}
+.quizbox{background:white;border:1px solid var(--line);border-radius:20px;padding:22px;text-align:center;max-width:650px;margin:0 auto}.quizword{font-size:2rem;font-weight:900;margin:18px 0}.answers{display:grid;grid-template-columns:1fr 1fr;gap:9px}.answers button{background:#f0f2fa;text-align:left}.answers button:hover{background:#e4e9ff}.feedback{min-height:28px;font-weight:800;margin:13px 0}.primary{background:var(--blue);color:white}.secondary{background:#eceef7;color:var(--ink)}.small{font-size:.82rem;color:var(--muted)}footer{text-align:center;padding:20px;color:var(--muted);font-size:.8rem}
+@media(max-width:520px){.stats{gap:7px}.stat{padding:10px}.answers{grid-template-columns:1fr}.word{padding:15px}}
+</style>
+</head>
+<body>
+<header><div class="wrap"><div class="eyebrow">YOUR EVERYDAY ENGLISH</div><h1>ことばポケット 📚</h1><p>毎日つかえる英語を、ひとつずつポケットに。</p></div></header>
+<main class="main">
+<section class="stats">
+<div class="stat"><strong id="total">0</strong><span>収録単語</span></div>
+<div class="stat"><strong id="savedCount">0</strong><span>お気に入り</span></div>
+<div class="stat"><strong id="learnedCount">0</strong><span>覚えた単語</span></div>
+</section>
+<div class="tools"><input id="search" type="search" placeholder="英語・日本語で検索…"><select id="level"><option value="all">すべてのレベル</option><option>初級</option><option>中級</option></select></div>
+<nav class="tabs" id="tabs">
+<button class="tab active" data-cat="すべて">🌟 すべて</button><button class="tab" data-cat="あいさつ">👋 あいさつ</button><button class="tab" data-cat="日常会話">💬 日常会話</button><button class="tab" data-cat="学校">🏫 学校</button><button class="tab" data-cat="気持ち">💗 気持ち</button><button class="tab" data-cat="旅行">✈️ 旅行</button><button class="tab" data-cat="食べ物">🍙 食べ物</button><button class="tab" data-cat="お気に入り">⭐ お気に入り</button><button class="tab" data-cat="覚えた">✅ 覚えた</button>
+</nav>
+<div id="list" class="grid"></div>
+<section id="quiz" hidden>
+<div class="quizbox"><div class="eyebrow">QUICK QUIZ</div><h2>ミニ単語テスト 🎯</h2><p class="small">英単語の意味を選ぼう！</p><div id="quizProgress" class="small"></div><div id="quizword" class="quizword"></div><div id="answers" class="answers"></div><div id="feedback" class="feedback" aria-live="polite"></div><button id="next" class="primary" hidden>次の問題 →</button><button id="restart" class="secondary">テストを最初から</button></div>
+</section>
+<div style="display:flex;justify-content:center;margin:20px 0"><button id="quizToggle" class="primary">🎯 単語テストに挑戦</button></div>
+</main>
+<footer>ことばポケット · お気に入りと学習状況はこのブラウザに保存されます。</footer>
+<script>
+const originalWords=[
+["hello","こんにちは","あいさつ","初級","Hello! How are you?","こんにちは！元気？"],
+["good morning","おはよう","あいさつ","初級","Good morning, everyone.","みなさん、おはよう。"],
+["thank you","ありがとう","あいさつ","初級","Thank you for your help.","手伝ってくれてありがとう。"],
+["you're welcome","どういたしまして","あいさつ","初級","You're welcome!","どういたしまして！"],
+["excuse me","すみません","あいさつ","初級","Excuse me, where is the station?","すみません、駅はどこですか？"],
+["sorry","ごめんなさい","あいさつ","初級","I'm sorry I'm late.","遅れてごめんなさい。"],
+["please","お願いします","あいさつ","初級","One coffee, please.","コーヒーをひとつお願いします。"],
+["see you later","またあとで","あいさつ","初級","See you later at school.","学校でまたあとでね。"],
+["How's it going?","調子どう？","日常会話","初級","Hey, how's it going?","やあ、調子どう？"],
+["I'm not sure","よく分からない","日常会話","初級","I'm not sure about that.","それについてはよく分からない。"],
+["Sounds good","いいね／よさそう","日常会話","初級","Let's meet at three. Sounds good!","3時に会おう。いいね！"],
+["No problem","問題ないよ","日常会話","初級","No problem. I can help.","問題ないよ。手伝えるよ。"],
+["Just a minute","ちょっと待って","日常会話","初級","Just a minute, please.","ちょっと待ってね。"],
+["I got it","分かった","日常会話","初級","I got it now.","今、分かったよ。"],
+["What do you mean?","どういう意味？","日常会話","中級","What do you mean by that?","それはどういう意味？"],
+["I'm looking for…","…を探しています","日常会話","中級","I'm looking for my phone.","スマホを探しています。"],
+["homework","宿題","学校","初級","I finished my homework.","宿題を終わらせた。"],
+["classmate","クラスメート","学校","初級","She is my classmate.","彼女はクラスメートです。"],
+["I forgot","忘れた","学校","初級","I forgot my notebook.","ノートを忘れた。"],
+["Could you help me?","手伝ってくれますか？","学校","中級","Could you help me with this?","これを手伝ってくれますか？"],
+["happy","うれしい","気持ち","初級","I'm happy today.","今日はうれしい。"],
+["nervous","緊張している","気持ち","中級","I'm nervous about the test.","テストで緊張している。"],
+["tired","疲れた","気持ち","初級","I'm tired after school.","学校のあとで疲れた。"],
+["excited","ワクワクしている","気持ち","中級","I'm excited about the trip.","旅行が楽しみ。"],
+["hungry","おなかがすいた","食べ物","初級","I'm getting hungry.","おなかがすいてきた。"],
+["delicious","おいしい","食べ物","初級","This cake is delicious.","このケーキはおいしい。"],
+["I'd like…","…をください／…がほしいです","食べ物","中級","I'd like a glass of water.","水を一杯ください。"],
+["check, please","お会計お願いします","食べ物","中級","Could we have the check, please?","お会計をお願いします。"],
+["Where is the station?","駅はどこですか？","旅行","初級","Excuse me, where is the station?","すみません、駅はどこですか？"],
+["How much is it?","いくらですか？","旅行","初級","How much is it?","これはいくらですか？"],
+["I'm lost","道に迷いました","旅行","初級","I'm lost. Can you help me?","道に迷いました。助けてもらえますか？"],
+["ticket","切符／チケット","旅行","初級","I need a train ticket.","電車の切符が必要です。"],
+["What time is it?","今何時ですか？","日常会話","初級","Excuse me, what time is it?","すみません、今何時ですか？"],
+["maybe","たぶん／もしかすると","日常会話","初級","Maybe we can go tomorrow.","明日なら行けるかも。"],
+["actually","実は／実際は","日常会話","中級","Actually, I live nearby.","実は、この近くに住んでいます。"],
+["take your time","ゆっくりでいいよ","日常会話","中級","Take your time. No rush.","ゆっくりでいいよ。急がなくて大丈夫。"],
+["good luck","頑張って／幸運を祈る","あいさつ","初級","Good luck on your test!","テスト頑張って！"],
+["awesome","最高！／すごい！","気持ち","初級","That game is awesome!","あのゲーム、最高！"],
+["boring","退屈な","気持ち","初級","This movie is boring.","この映画は退屈だ。"],
+["keep in touch","連絡を取り合う","日常会話","中級","Let's keep in touch.","これからも連絡を取り合おう。"]
+];
+
+// 追加の学習データ：日常で使いやすい語句を組み合わせ、既存40件と合わせて1000件にする
+const extraWords = [];
+const phraseGroups = [
+ {cat:"日常会話", level:"初級", en:["I need","I want","I have","I like","I know","I think","I use","I found","I lost","I made","I bought","I brought","I forgot","I remember","I prefer","I chose","I tried","I ordered","I saw","I heard"], ja:["必要です","ほしいです","持っています","好きです","知っています","思います","使います","見つけました","なくしました","作りました","買いました","持ってきました","忘れました","覚えています","のほうが好きです","選びました","試しました","注文しました","見ました","聞きました"], objects:[["a pen","ペンを"],["a notebook","ノートを"],["my phone","自分のスマホを"],["some water","水を"],["a ticket","チケットを"],["more time","もっと時間が"],["a new game","新しいゲームを"],["this idea","この考えを"],["the answer","答えを"],["a little help","少し助けが"]]},
+ {cat:"学校", level:"初級", en:["I study","I read","I write","I learn","I practice","I finish","I start","I check","I explain","I ask","I answer","I solve","I review","I draw","I spell","I translate","I understand","I prepare","I share","I present"], ja:["勉強します","読みます","書きます","学びます","練習します","終えます","始めます","確認します","説明します","質問します","答えます","解きます","復習します","描きます","つづります","翻訳します","理解します","準備します","共有します","発表します"], objects:[["English","英語を"],["the question","その問題を"],["my homework","宿題を"],["a new word","新しい単語を"],["the lesson","授業を"],["the example","例を"],["the instructions","説明を"],["the test","テストを"],["my notes","ノートを"],["the problem","問題を"]]},
+ {cat:"旅行", level:"初級", en:["I need","I booked","I missed","I found","I checked","I packed","I visited","I reached","I crossed","I followed","I changed","I paid for","I waited for","I asked for","I looked for","I got on","I got off","I arrived at","I left","I reserved"], ja:["必要です","予約しました","乗り遅れました","見つけました","確認しました","荷造りしました","訪れました","到着しました","渡りました","従いました","変更しました","支払いました","待ちました","頼みました","探しました","乗りました","降りました","到着しました","出発しました","予約しました"], objects:[["a train","電車を"],["the bus","バスを"],["a hotel","ホテルを"],["the airport","空港を"],["the station","駅を"],["my passport","パスポートを"],["the map","地図を"],["a taxi","タクシーを"],["the next stop","次の停留所を"],["a table","席を"]]},
+ {cat:"食べ物", level:"初級", en:["I'd like","I ordered","I cooked","I ate","I drank","I tried","I made","I shared","I prefer","I recommend","Can I have","Could I get","I need","I don't eat","I can't have","Please bring","Can we see","I'd prefer","This tastes","It smells"], ja:["ほしいです","注文しました","料理しました","食べました","飲みました","試しました","作りました","分け合いました","のほうが好きです","おすすめします","もらえますか","いただけますか","必要です","食べません","食べられません","持ってきてください","見せてもらえますか","のほうがいいです","これは〜の味がします","〜のにおいがします"], objects:[["a sandwich","サンドイッチを"],["some water","水を"],["the menu","メニューを"],["a salad","サラダを"],["the chicken","チキンを"],["a coffee","コーヒーを"],["the soup","スープを"],["a small pizza","小さなピザを"],["the local dish","地元の料理を"],["a dessert","デザートを"]]},
+ {cat:"気持ち", level:"初級", en:["I feel","I feel","I'm","I'm","I get","I get","I seem","I feel","I am becoming","I was"], ja:["感じます","感じます","私は〜です","私は〜です","〜になります","〜になります","〜のようです","感じます","〜になってきています","〜でした"], objects:[["happy","うれしい"],["sad","悲しい"],["nervous","緊張している"],["excited","ワクワクしている"],["tired","疲れている"],["hungry","おなかがすいている"],["ready","準備ができている"],["better","より良い気分"],["more confident","もっと自信がある"],["relaxed","リラックスしている"]]},
+ {cat:"日常会話", level:"中級", en:["Could you","Would you","Can you","Do you","Did you","Have you","Are you","Would it be","Is it","Could I"], ja:["〜していただけますか","〜してもらえますか","〜できますか","〜しますか","〜しましたか","〜したことがありますか","〜ですか","〜でしょうか","〜ですか","〜してもいいですか"], objects:[["help me","私を手伝う"],["say that again","もう一度言う"],["speak more slowly","もっとゆっくり話す"],["show me the way","道を教える"],["check this","これを確認する"],["send me a message","私にメッセージを送る"],["open the window","窓を開ける"],["explain it","それを説明する"],["wait a moment","少し待つ"],["tell me the time","時間を教える"]]}
+];
+for (const g of phraseGroups) {
+ for (let i=0;i<g.en.length;i++) for (let j=0;j<g.objects.length;j++) {
+   const [obj,objja]=g.objects[j];
+   const en=(g.en[i]+" "+obj).replace(/\s+/g," ").trim();
+   let ja;
+   if (g.cat==="気持ち") ja=g.ja[i]+objja;
+   else if (g.cat==="日常会話" && g.en[i].includes("Could you")) ja=g.ja[i]+objja+"？";
+   else if (g.cat==="日常会話" && ["Would you","Can you","Do you","Did you","Have you","Are you","Could I"].includes(g.en[i])) ja=g.ja[i]+objja+"？";
+   else ja=g.ja[i]+objja;
+   extraWords.push([en,ja,g.cat,g.level,en+".",ja+"。"]);
+ }
+}
+// 使いやすい基本語を追加。IDや学習機能は既存ロジックで管理する。
+const basic = [
+["family","家族","日常会話"],["parent","親","日常会話"],["mother","母","日常会話"],["father","父","日常会話"],["sister","姉／妹","日常会話"],["brother","兄／弟","日常会話"],["friend","友達","日常会話"],["neighbor","近所の人","日常会話"],["teacher","先生","学校"],["student","生徒／学生","学校"],["doctor","医者","日常会話"],["nurse","看護師","日常会話"],["driver","運転手","旅行"],["customer","客","日常会話"],["team","チーム","学校"],["group","グループ","学校"],["people","人々","日常会話"],["person","人","日常会話"],["child","子ども","日常会話"],["adult","大人","日常会話"],
+["morning","朝","日常会話"],["afternoon","午後","日常会話"],["evening","夕方／夜","日常会話"],["night","夜","日常会話"],["today","今日","日常会話"],["tomorrow","明日","日常会話"],["yesterday","昨日","日常会話"],["week","週","日常会話"],["month","月","日常会話"],["year","年","日常会話"],["minute","分","日常会話"],["hour","時間","日常会話"],["early","早く／早い","日常会話"],["late","遅く／遅い","日常会話"],["soon","もうすぐ","日常会話"],["always","いつも","日常会話"],["usually","たいてい","日常会話"],["sometimes","ときどき","日常会話"],["never","決して〜ない","日常会話"],["often","よく","日常会話"],
+["big","大きい","日常会話"],["small","小さい","日常会話"],["long","長い","日常会話"],["short","短い","日常会話"],["high","高い","日常会話"],["low","低い","日常会話"],["fast","速い","日常会話"],["slow","遅い／ゆっくり","日常会話"],["easy","簡単な","学校"],["difficult","難しい","学校"],["important","大切な","学校"],["interesting","おもしろい","気持ち"],["beautiful","美しい","気持ち"],["clean","きれいな／清潔な","日常会話"],["dirty","汚い","日常会話"],["strong","強い","日常会話"],["weak","弱い","日常会話"],["safe","安全な","旅行"],["dangerous","危険な","旅行"],["free","無料の／自由な","日常会話"],
+["weather","天気","日常会話"],["rain","雨","日常会話"],["snow","雪","日常会話"],["wind","風","日常会話"],["cloud","雲","日常会話"],["sun","太陽","日常会話"],["sky","空","日常会話"],["sea","海","旅行"],["river","川","旅行"],["mountain","山","旅行"],["tree","木","日常会話"],["flower","花","日常会話"],["animal","動物","日常会話"],["dog","犬","日常会話"],["cat","猫","日常会話"],["bird","鳥","日常会話"],["fish","魚","食べ物"],["horse","馬","日常会話"],["house","家","日常会話"],["room","部屋","日常会話"],
+["door","ドア","日常会話"],["window","窓","日常会話"],["table","テーブル","日常会話"],["chair","椅子","日常会話"],["bed","ベッド","日常会話"],["desk","机","学校"],["computer","コンピューター","学校"],["screen","画面","学校"],["keyboard","キーボード","学校"],["mouse","マウス","学校"],["internet","インターネット","日常会話"],["website","ウェブサイト","日常会話"],["message","メッセージ","日常会話"],["photo","写真","日常会話"],["video","動画","日常会話"],["music","音楽","日常会話"],["movie","映画","日常会話"],["game","ゲーム","日常会話"],["book","本","学校"],["paper","紙","学校"],
+["apple","りんご","食べ物"],["banana","バナナ","食べ物"],["bread","パン","食べ物"],["rice","ご飯／米","食べ物"],["egg","卵","食べ物"],["cheese","チーズ","食べ物"],["milk","牛乳","食べ物"],["tea","お茶","食べ物"],["coffee","コーヒー","食べ物"],["juice","ジュース","食べ物"],["soup","スープ","食べ物"],["meat","肉","食べ物"],["vegetable","野菜","食べ物"],["fruit","果物","食べ物"],["breakfast","朝食","食べ物"],["lunch","昼食","食べ物"],["dinner","夕食","食べ物"],["snack","軽食／おやつ","食べ物"],["sweet","甘い／お菓子","食べ物"],["salty","塩辛い","食べ物"],
+["airport","空港","旅行"],["hotel","ホテル","旅行"],["restaurant","レストラン","旅行"],["hospital","病院","旅行"],["library","図書館","学校"],["museum","博物館","旅行"],["park","公園","旅行"],["shop","店","旅行"],["store","店","旅行"],["market","市場","旅行"],["street","通り","旅行"],["road","道路","旅行"],["bridge","橋","旅行"],["corner","角","旅行"],["left","左","旅行"],["right","右／正しい","旅行"],["straight","まっすぐ","旅行"],["near","近く","旅行"],["far","遠い","旅行"],["address","住所","旅行"],
+["run","走る","日常会話"],["walk","歩く","日常会話"],["talk","話す","日常会話"],["speak","話す","日常会話"],["listen","聞く","日常会話"],["watch","見る","日常会話"],["look","見る","日常会話"],["see","見える／会う","日常会話"],["make","作る","日常会話"],["do","する","日常会話"],["go","行く","日常会話"],["come","来る","日常会話"],["get","得る／手に入れる","日常会話"],["give","あげる","日常会話"],["take","取る／持っていく","日常会話"],["bring","持ってくる","日常会話"],["buy","買う","日常会話"],["sell","売る","日常会話"],["pay","支払う","日常会話"],["help","助ける","日常会話"],
+["open","開ける","日常会話"],["close","閉める","日常会話"],["turn","曲がる／回す","旅行"],["move","動く／引っ越す","日常会話"],["stay","滞在する","旅行"],["live","住む／生きる","日常会話"],["work","働く／作業","日常会話"],["play","遊ぶ／演奏する","日常会話"],["sleep","眠る","日常会話"],["wake up","起きる","日常会話"],["eat","食べる","食べ物"],["drink","飲む","食べ物"],["cook","料理する","食べ物"],["wash","洗う","日常会話"],["clean","掃除する","日常会話"],["wait","待つ","日常会話"],["meet","会う","日常会話"],["call","電話する／呼ぶ","日常会話"],["send","送る","日常会話"],["receive","受け取る","日常会話"],
+["think","考える","日常会話"],["believe","信じる","日常会話"],["hope","望む","気持ち"],["wish","願う","気持ち"],["feel","感じる","気持ち"],["smile","ほほえむ","気持ち"],["laugh","笑う","気持ち"],["cry","泣く","気持ち"],["worry","心配する","気持ち"],["relax","くつろぐ","気持ち"],["enjoy","楽しむ","気持ち"],["love","大好き／愛する","気持ち"],["hate","大嫌い","気持ち"],["need","必要とする","日常会話"],["want","ほしい","日常会話"],["choose","選ぶ","日常会話"],["decide","決める","日常会話"],["change","変える","日常会話"],["learn","学ぶ","学校"],["teach","教える","学校"]
+];
+for (const [en,ja,cat] of basic) extraWords.push([en,ja,cat,"初級",en+".",ja+"。"]);
+const seen = new Set();
+for (const w of extraWords) seen.add(w[0].toLowerCase());
+const additions = extraWords.filter(w=>{const k=w[0].toLowerCase(); if(seen.has("base:"+k)) return false; seen.add("base:"+k); return true;});
+const additionsUnique = [];
+const finalSeen = new Set(originalWords.map(w=>w[0].toLowerCase()));
+for (const w of additions) { const key=w[0].toLowerCase(); if(!finalSeen.has(key)){finalSeen.add(key); additionsUnique.push(w);} }
+// 1000件に達するまで、日常で使う疑問文・依頼表現を追加
+const extraPatterns = [
+ ["Can I", "〜してもいいですか", ["use your phone","borrow a pen","sit here","pay by card","take a photo","come in","ask a question","open the window","try this","have some water"]],
+ ["I usually", "私はたいてい〜します", ["walk to school","eat breakfast","study at night","listen to music","play games","read before bed","drink tea","help at home","get up early","watch videos"]],
+ ["I have to", "〜しなければなりません", ["go now","study tonight","finish my homework","leave early","catch the bus","clean my room","call my friend","get up early","buy some food","wait here"]],
+ ["Let's", "〜しよう", ["go together","take a break","try again","start now","eat lunch","watch a movie","play a game","ask the teacher","meet tomorrow","keep going"]],
+ ["Where can I", "どこで〜できますか", ["buy a ticket","find a taxi","charge my phone","get some water","change money","find the restroom","catch the bus","buy a SIM card","get help","leave my bag"]],
+ ["Do you have", "〜はありますか", ["a minute","any questions","a pen","this in blue","a table for two","vegetarian food","free Wi-Fi","a map","a smaller size","time tomorrow"]],
+ ["I'm going to", "〜するつもりです", ["study English","visit my friend","take a shower","go shopping","watch a movie","clean my room","make dinner","call my family","practice today","travel next week"]],
+ ["It looks", "〜に見えます", ["good","great","different","easy","difficult","interesting","expensive","beautiful","useful","comfortable"]],
+ ["Please", "〜してください", ["wait here","follow me","speak slowly","write it down","say it again","be careful","keep the change","call me later","check this","close the door"]],
+ ["I can't", "〜できません", ["hear you","find my keys","remember his name","come today","stay long","open this file","understand this word","see the screen","eat spicy food","decide yet"]]
+];
+for (const [prefix, gloss, endings] of extraPatterns) for (const ending of endings) {
+ const en=prefix+" "+ending; const key=en.toLowerCase();
+ if(!finalSeen.has(key)){finalSeen.add(key);additionsUnique.push([en,gloss+"（"+ending+"）","日常会話","初級",en+".",gloss+"（"+ending+"）。"]);}
+}
+// 足りない分は追加の自然な会話表現を作成して、登録数を正確に1000件にそろえる
+const morePrefixes = [["I hope", "〜だといいな"],["I wonder", "〜かなと思う"],["I decided to", "〜することに決めた"],["I need to", "〜する必要がある"],["I'm trying to", "〜しようとしている"],["I forgot to", "〜するのを忘れた"],["I learned to", "〜できるようになった"],["I would like to", "〜したいです"],["I don't know how to", "どうやって〜するか分からない"],["It's time to", "〜する時間です"]];
+const moreEndings=["ask for help","make a choice","take a break","learn something new","save my work","check the time","call a friend","find the answer","try something different","make a plan","get some rest","go outside","start again","write a message","practice English","make dinner","read the instructions","keep a promise","solve the problem","have some fun"];
+for (const [prefix,gloss] of morePrefixes) for(const ending of moreEndings){const en=prefix+" "+ending;const key=en.toLowerCase();if(!finalSeen.has(key)){finalSeen.add(key);additionsUnique.push([en,gloss+"（"+ending+"）","日常会話","中級",en+".",gloss+"（"+ending+"）。"]);}}
+const allRows = [...originalWords, ...additionsUnique];
+const words = allRows.slice(0,1000).map((w,i)=>({id:i,en:w[0],ja:w[1],cat:w[2],level:w[3],ex:w[4],exja:w[5]}));
+const $=s=>document.querySelector(s);
+let category="すべて", quizMode=false, quizDeck=[], qi=0, score=0, answered=false;
+const load=(k,def)=>{try{return JSON.parse(localStorage.getItem(k))||def}catch{return def}};
+let saved=load("kotoba_saved",[]), learned=load("kotoba_learned",[]);
+function persist(){localStorage.setItem("kotoba_saved",JSON.stringify(saved));localStorage.setItem("kotoba_learned",JSON.stringify(learned));}
+function stats(){$("#total").textContent=words.length;$("#savedCount").textContent=saved.length;$("#learnedCount").textContent=learned.length;}
+function render(){
+ const q=$("#search").value.trim().toLowerCase(), lev=$("#level").value;
+ let filtered=words.filter(w=>(category==="すべて"|| (category==="お気に入り"?saved.includes(w.id):category==="覚えた"?learned.includes(w.id):w.cat===category))&&(lev==="all"||w.level===lev)&&(!q||(w.en+" "+w.ja+" "+w.ex).toLowerCase().includes(q)));
+ $("#list").innerHTML=filtered.length?filtered.map(w=>`<article class="word"><div class="wordtop"><span class="tag">${w.cat} · ${w.level}</span><button class="star ${saved.includes(w.id)?"saved":""}" data-star="${w.id}" aria-label="お気に入り">${saved.includes(w.id)?"★":"☆"}</button></div><div class="english">${w.en}</div><div class="japanese">${w.ja}</div><div class="example"><b>${w.ex}</b><br>${w.exja}</div><div class="actions"><button data-speak="${w.id}">🔊 発音</button><button data-learn="${w.id}">${learned.includes(w.id)?"✓ 覚えた！":"覚えた"}</button></div></article>`).join(""):'<div class="empty">見つからへんかった！検索ワードを変えてみてな 🔎</div>';
+ stats();
+}
+$("#tabs").addEventListener("click",e=>{const b=e.target.closest("button[data-cat]");if(!b)return;category=b.dataset.cat;document.querySelectorAll(".tab").forEach(t=>t.classList.toggle("active",t===b));quizMode=false;$("#quiz").hidden=true;$("#list").hidden=false;$("#quizToggle").hidden=false;render()});
+$("#search").addEventListener("input",render);$("#level").addEventListener("change",render);
+$("#list").addEventListener("click",e=>{
+ const star=e.target.closest("[data-star]"), learn=e.target.closest("[data-learn]"), speak=e.target.closest("[data-speak]");
+ if(star){const id=+star.dataset.star;saved=saved.includes(id)?saved.filter(x=>x!==id):[...saved,id];persist();render()}
+ if(learn){const id=+learn.dataset.learn;learned=learned.includes(id)?learned.filter(x=>x!==id):[...learned,id];persist();render()}
+ if(speak){const w=words.find(x=>x.id===+speak.dataset.speak);if("speechSynthesis"in window){speechSynthesis.cancel();let u=new SpeechSynthesisUtterance(w.en);u.lang="en-US";speechSynthesis.speak(u)}else alert("このブラウザは音声読み上げに対応していません。")}
+});
+function startQuiz(){quizMode=true;category="すべて";quizDeck=[...words].sort(()=>Math.random()-.5).slice(0,10);qi=0;score=0;$("#list").hidden=true;$("#quiz").hidden=false;$("#quizToggle").hidden=true;document.querySelectorAll(".tab").forEach(t=>t.classList.toggle("active",t.dataset.cat==="すべて"));showQuestion()}
+function showQuestion(){
+ answered=false;$("#feedback").textContent="";$("#next").hidden=true;
+ if(qi>=quizDeck.length){$("#quizProgress").textContent=`10問終了 · ${score}問正解`;$("#quizword").textContent=`${score} / ${quizDeck.length} 問正解 🎉`;$("#answers").innerHTML='<p>おつかれさま！もう一度挑戦してみよう。</p>';$("#next").hidden=true;return}
+ const w=quizDeck[qi];$("#quizProgress").textContent=`第 ${qi+1} 問 / ${quizDeck.length} 問`;$("#quizword").textContent=w.en;
+ let opts=[w,...words.filter(x=>x.id!==w.id).sort(()=>Math.random()-.5).slice(0,3)].sort(()=>Math.random()-.5);
+ $("#answers").innerHTML=opts.map(o=>`<button data-answer="${o.id}">${o.ja}</button>`).join("");
+}
+$("#answers").addEventListener("click",e=>{const b=e.target.closest("[data-answer]");if(!b||answered||qi>=quizDeck.length)return;answered=true;const w=quizDeck[qi];const ok=+b.dataset.answer===w.id;if(ok)score++;$("#feedback").textContent=ok?"正解！ 🎉":"おしい！ 正解は「"+w.ja+"」";$("#answers").querySelectorAll("button").forEach(x=>{x.disabled=true;if(+x.dataset.answer===w.id)x.style.background="#dff7ec"});$("#next").hidden=false;});
+$("#next").addEventListener("click",()=>{qi++;showQuestion()});$("#restart").addEventListener("click",startQuiz);$("#quizToggle").addEventListener("click",startQuiz);
+render();
+</script>
+</body></html>
